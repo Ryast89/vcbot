@@ -51,4 +51,3 @@ for i in range(11, 21):
 
 # Then, get votes from "voter"
 print(get_votes_by_voter("A", "voter"))
-
