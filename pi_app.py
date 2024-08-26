@@ -6,8 +6,6 @@ from flask_apscheduler import APScheduler
 import database
 import update_posts
 import time
-print("Starting up")
-
 
 app = Flask(__name__)
 scheduler = APScheduler()
@@ -32,15 +30,10 @@ def job_A():
             #get current time since epoch
             if int(time.time()) > update_time_log_A + database.get_game_attr(game, "update_interval"):
                 update_time_log_A = int(time.time())
-                print("Updating game {}".format(game))
                 update_posts.update_game(game)
-                print("Game {} updated. Waiting {} seconds.".format(game, database.get_game_attr(game, "update_interval")))
         if database.get_game_attr(game, "update_now_requested"):
             database.set_game_attr(game, "update_now_requested", False)
-            print("Immediate game update requested for game {}.".format(game))
             update_posts.update_game(game)
-            print("Game {} updated.".format(game))
-                
                 
 @app.route("/")
 def home():
