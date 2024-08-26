@@ -1,2 +1,3 @@
 .vscode/
 *.pyc
+Credentials/google_secret.json

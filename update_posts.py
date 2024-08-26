@@ -3,25 +3,18 @@ from bs4 import BeautifulSoup
 import pytz
 import datetime
 import re
+import gspread
+import time
+import random
 
-from database import get_all_posts, add_post_to_db, add_vote_to_db, get_game_attr
+import database
 
-#These definitions match database.py
-class post:  #object to store post data
-    def __init__(self, id, author, HTML, postnum, date):
-      self.id = id
-      self.author = author
-      self.HTML = HTML
-      self.postnum = postnum
-      self.date = date
+gc = gspread.service_account(filename="Credentials/google_secret.json")
 
-class vote: #store votes
-    def __init__(self, voter, target, url, postnum, game):
-        self.voter = voter
-        self.target = target
-        self.url = url
-        self.postnum = postnum
-        self.game = game
+sh = gc.open("Aerosync")
+
+from object_types.post import post
+from object_types.vote import vote
 
 #read_from_last reads all posts from the last read page to the current page and returns the posts as a list.
 def read_from_last(url, last_page_number):
@@ -30,7 +23,7 @@ def read_from_last(url, last_page_number):
     prev_post_number = -1
 
     for i in range(last_page_number, 1000):
-
+        time.sleep(random.randint(500,1500)/1000.0)
         #cloudscraper is a library that bypasses cloudflare protection - similar to requests
         scraper = cloudscraper.create_scraper()
         response = scraper.get(url + str(i))
@@ -43,11 +36,8 @@ def read_from_last(url, last_page_number):
                 "message-attribution-opposite message-attribution-opposite--list"
             }).text.replace(",", "").replace("\n", "").replace(
                 "#", ""))  #first post number of the page
-       
-        print("Scraping page {} with first post number {}".format(i, firstpostnumber))
 
         if firstpostnumber == prev_post_number:
-            print("Detected end of thread.")
             break
 
         prev_post_number = firstpostnumber
@@ -56,7 +46,7 @@ def read_from_last(url, last_page_number):
         for message in soup.find_all("article", class_='message'):
 
             username = message.find(class_='username').get_text().replace(
-                "\n", "").replace(" ", "")
+                "\n", "").replace(" ", "").lower()
             postnumber = int(
                 message.find(
                     "ul", {
@@ -77,10 +67,9 @@ def read_from_last(url, last_page_number):
 
             #add post to list
             scrapedPosts.append(
-                post(postid, username, str(message), postnumber, postdate))
+                post(username, postnumber, postid, postdate, str(message)))
           
     return scrapedPosts
-
 
 #update_game updates the posts and votes in the database for a game.
 def update_game(game):
@@ -92,7 +81,7 @@ def update_game(game):
         # If yes, update the post in the database
         # Check if the post has votes
         # If yes, update the votes in the database
-    stored_posts = get_all_posts(game)
+    stored_posts = database.get_all_posts(game)
 
     #sort posts by post number
     stored_posts.sort(key=lambda x: x["postnum"])
@@ -106,12 +95,12 @@ def update_game(game):
         last_page_number = 1
     
     #need to update this to get the actual thread url from database
-    url = get_game_attr(game, "url")
+    url = database.get_game_attr(game, "url")
     new_posts = read_from_last(url, last_page_number)
 
     for post in new_posts:
         if post.postnum > last_post_number:
-            add_post_to_db(game, post)
+            database.add_post_to_db(game, post)
 
             #check for votes
             message = post.HTML
@@ -130,10 +119,45 @@ def update_game(game):
             target = matches[-1].strip() if matches else None
 
             if target != None:
-                target = target.replace("@", "")
+                target = target.replace("@", "").lower()
                 v = vote(post.author, target, "google.ca", post.postnum, game)
-                print(post.author, target, "google.ca", post.postnum, game)
-                add_vote_to_db(game, v)
+                database.add_vote_to_db(game, v)
     
 
     return
+
+def scrape_playerlist(game):
+    playerlist = []
+
+    scraper = cloudscraper.create_scraper()
+    response = scraper.get(database.get_game_attr(game, "url")+"1").text
+    soup = BeautifulSoup(response, 'html.parser')
+
+    message = soup.find_all("article", class_='message')[0]
+    text = (message.find(class_='bbWrapper')).get_text()
+    text = text[text.lower().find("spoiler: living players"):text.lower().
+                find("spoiler: dead players")]
+
+    while (text.find("@") != -1):
+        text = text[text.find("@"):]
+        player = text[text.find("@") + 1:text.find('\n')].replace(" ", "").replace(
+            "\u200b", "")
+        playerlist.append(player)
+        text = text[text.find('\n'):]
+
+    #in sh, open tab "Game {}"
+    ws = sh.worksheet("Game {}".format(game))
+
+    ws.batch_clear(["A2:C1000"])  #clear all cells
+
+    for i in range(0, len(playerlist)):
+        ws.update_acell("A{}".format(i + 2), playerlist[i])
+  
+    #clear "Forum Username", "When did they join?", "When did they die?" columns - columns 1, 2, 3 
+    return
+
+def get_original_playerlist(game):
+    ws = sh.worksheet("Game {}".format(game))    
+    #get col A, B, and C in a pandas dataframe
+    df = ws.get_all_records(expected_headers=["Forum Username", "When did they join?", "When did they die?"], head=1)
+    return(df)
