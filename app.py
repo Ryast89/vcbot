@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask_apscheduler import APScheduler
 from iso import get_iso
-from object_types import post
+from ctypes import Post
 
 app = Flask(__name__)
 scheduler = APScheduler()
