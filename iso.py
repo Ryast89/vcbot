@@ -1,7 +1,7 @@
 # This file contains functions for working with ISOs.
 
 from database import get_posts_by_authors
-from object_types.post import post
+from ctypes import Post
 
 
 # get_iso takes a list of players (at least one), and returns a list of all posts by those players.
@@ -11,8 +11,9 @@ def get_iso(players, game):
     iso_db_obj = get_posts_by_authors(game, players)  # get a list of database objects pertaining to "players"
     iso_list = []  # storage
     for mapping in iso_db_obj:
-        curPost = post(mapping["author"], mapping["postnum"], mapping["post_id"], mapping["date"], mapping["content"])  # initiate a post obj
-        iso_list.append(curPost)
+        cur_post = Post(mapping["author"], mapping["postnum"], mapping["post_id"],
+                        mapping["date"], mapping["content"])  # initiate a post obj
+        iso_list.append(cur_post)
     return iso_list
 
 
