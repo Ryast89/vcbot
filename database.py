@@ -1,9 +1,10 @@
 import pymongo
 from functools import wraps
 
-from object_types import vote, post, phase
+from ctypes import Vote, Post, Phase
 
-#Define a decorator to validate 'game' entries
+
+# Define a decorator to validate 'game' entries
 def validate_game(func):
     @wraps(func)
     def wrapper(game, *args, **kwargs):
@@ -93,13 +94,13 @@ def add_phase_to_db(game, phase):
 def get_phases(game):
     col = db["phases"]
     res = col.find({ "game": game })
-    #sort phases by postnum
+    # sort phases by postnum
     res = sorted(res, key=lambda x: x["postnum"])
     return list(res)
 
   
 def add_alias_to_db(name, alias):
-    alias = alias.lower() #for searchability
+    alias = alias.lower()  # for searchability
     col = db["aliases"]
     myquery = { "alias": alias }
     newvalues = { "$set": { "alias": alias, "name": name } }
@@ -110,12 +111,12 @@ def add_alias_to_db(name, alias):
 def get_aliases():
     col = db["aliases"]
     res = col.find()
-    return {x["alias"]: x["name"] for x in res} #returns a dict for searchability
+    return {x["alias"]: x["name"] for x in res} # returns a dict for searchability
 
  
 @validate_game
 def set_game_attr(game, key, value):
-    #game is the column, key is the row, value is the value to update
+    # game is the column, key is the row, value is the value to update
     col = db["game_attr"]
     myquery = { "game": game, "key": key }
     newvalues = { "$set": { "game": game, "key": key, "value": value } }
@@ -135,11 +136,11 @@ def get_game_attr(game, key):
 
 @validate_game
 def wipe_game_db(game):
-    #wipe all posts for a certain game
+    # wipe all posts for a certain game
     col = db["posts"]
     q = { "game": game }
     col.delete_many(q)
-    #wipe all votes for a certain game
+    # wipe all votes for a certain game
     col = db["votes"]
     q = { "game": game }
     col.delete_many(q)
