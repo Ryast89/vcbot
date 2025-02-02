@@ -147,8 +147,8 @@ def scrape_playerlist(game):
 
     message = soup.find_all("article", class_='message')[0]
     text = (message.find(class_='bbWrapper')).get_text()
-    text = text[text.lower().find("spoiler: living players"):text.lower().
-    find("spoiler: dead players")]
+    text = text[text.lower().find("living players"):text.lower().
+    find("dead players")]
 
     while text.find("@") != -1:
         text = text[text.find("@"):]
