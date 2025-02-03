@@ -6,6 +6,7 @@ from flask_apscheduler import APScheduler
 import database
 import update_posts
 import time
+from datetime import datetime
 
 app = Flask(__name__)
 scheduler = APScheduler()
@@ -36,12 +37,17 @@ def job_A():
     global update_time_log_B
     global update_time_log_C
     for game in ['A', 'B', 'C']:
+        current_time = datetime.now()
+        time_string = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
         if database.get_game_attr(game, "update_toggle"):
             # get current time since epoch
             if int(time.time()) > update_time_log_A + database.get_game_attr(game, "update_interval"):
+                print("updating game at " + str(time_string))
                 update_time_log_A = int(time.time())
                 try_update(game)
         if database.get_game_attr(game, "update_now_requested"):
+            print("manually updating game at " + str(time_string))
             try_update(game)
 
 
