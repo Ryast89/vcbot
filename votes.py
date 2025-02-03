@@ -48,7 +48,7 @@ def get_vote_history(game):
     for vote in votes:
         i += 1
         phase = get_phase(game, vote['postnum'], phases)
-        output += "<tr class=''><td class='position'>" + str(i) + "</td><td class='data'>" + vote['voter'] + "</td><td class='data'>" + vote['target'] + "</td><td class='data'><a href=" + vote['url'] + ">" + str(vote['postnum']) + "</a></td>" + "<td class='data'>" + phase['phase'] + "</td></tr>"
+        output += "<tr class=''><td class='position'>" + str(i) + "</td><td class='data'>" + vote['voter'] + "</td><td class='data'>" + vote['target'] + "</td><td class='data'><a href=" + vote['url'] + ">" + str(vote['postnum']) + "</a></td>" + "<td class='data'>" + phase['phase'] + "</td>" + "<td class='retro-vc'> <a href='#' class='retrospective-vc-link' data-postnum='" + str(vote['postnum']) + "'>Link</a></td></tr>"
     return output
 
 def get_votecount(game, postnum):
