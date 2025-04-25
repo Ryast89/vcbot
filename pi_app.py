@@ -115,7 +115,7 @@ def job_eod():
                 database.set_game_attr(game, "update_interval", if_eod_autoupdate_length)  # update the interval
                 database.set_game_attr(game, "eod_toggle", False)
 
-            if is_currently_eod:  # If EoD is already toggled
+            else:  # If EoD is already toggled
                 current_game_toggle = now_epoch + eod_toggle_length
 
                 print(f"[@ {time_string}]: EoD toggle flag for game {game} extended.")
