@@ -20,6 +20,15 @@ update_time_log_A = 0
 update_time_log_B = 0
 update_time_log_C = 0
 
+
+# Global variables for the EoD toggle method
+eod_toggle_until_A = None
+is_A_in_eod = False
+eod_toggle_until_B = None
+is_B_in_eod = False
+eod_toggle_until_C = None
+is_C_in_eod = False
+
 def try_update(game):
     database.set_game_attr(game, "update_now_requested", "Updating now")
     try:
@@ -67,14 +76,6 @@ def job_A():
             update_time_log_B = current_game_log
         else:
             update_time_log_C = current_game_log
-
-
-eod_toggle_until_A = None
-is_A_in_eod = False
-eod_toggle_until_B = None
-is_B_in_eod = False
-eod_toggle_until_C = None
-is_C_in_eod = False
 
 
 # Scheduler job for EoD toggle (temp vc auto update delay change)
