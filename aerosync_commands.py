@@ -131,6 +131,14 @@ class game(app_commands.Group):
         scrape_playerlist(game)
         await interaction.response.send_message('Scraped playerlist for game {}.'.format(game))
 
+    # EoD Toggle command
+    @app_commands.command()
+    @app_commands.check(is_host)
+    @app_commands.describe(game='Available Games')
+    async def enable_near_eod(self, interaction: discord.Interaction, game: Literal['A', 'B', 'C']):
+        database.set_game_attr(game, "eod_toggle", True)
+        await interaction.response.send_message('Updated EoD toggle value for game {}.'.format(game))
+
 
 class update(app_commands.Group):
     #toggle updates on or off
