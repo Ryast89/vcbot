@@ -59,7 +59,7 @@ def read_from_last(url, last_page_number):
                         "class":
                             "message-attribution-opposite message-attribution-opposite--list"
                     }).text.replace("\n", "").replace(",", "").replace("#", ""))
-            timestamp = int(message.find("time").get("data-time"))
+            timestamp = int(message.find("time").get("data-timestamp"))
 
             # Get a timezone object for the desired timezone
             tz = pytz.timezone('US/Eastern')
